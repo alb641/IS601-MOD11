@@ -262,3 +262,44 @@ Then submit the GitHub repository link as instructed.
 - [Python Downloads](https://www.python.org/downloads/)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 - [GitHub SSH Setup Guide](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)
+
+## Module 10: Secure User Model and CI/CD
+
+### Project Overview
+
+This project extends a FastAPI application with secure user management using SQLAlchemy, PostgreSQL, and Pydantic. It includes unique username and email constraints, password hashing and verification, and automated unit, integration, and end-to-end tests.
+
+### Running Tests Locally
+
+1. Clone this repository and open the project directory.
+2. Create a Python virtual environment and activate it.
+3. Install dependencies:
+   `python -m pip install -r requirements.txt`
+4. Start PostgreSQL using Docker Compose:
+   `docker compose up -d`
+5. Configure the `DATABASE_URL` environment variable to point to your PostgreSQL test database.
+6. Run the tests:
+   `python -m pytest tests/ -v`
+
+### CI/CD Pipeline
+
+GitHub Actions automatically runs tests against PostgreSQL, builds a Docker image, scans the image using Trivy, and pushes the image to Docker Hub.
+
+The Trivy scanner currently reports vulnerabilities without blocking deployment. 
+
+### Docker Hub Deployment
+
+Docker image: `aliyahb4/is601-mod10:latest`
+
+Docker Hub repository:
+https://hub.docker.com/r/aliyahb4/is601-mod10
+
+To download the image:
+`docker pull aliyahb4/is601-mod10:latest`
+
+The published image was successfully pulled, started, and verified to return HTTP `200 OK`.
+
+### GitHub Actions
+
+Successful workflow:
+https://github.com/alb641/IS601-MOD10/actions/runs/43558016499
