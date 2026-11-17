@@ -17,8 +17,11 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 from app.database import Base, get_engine, get_sessionmaker
 from app.models.user import User
+from app.models.calculation import Calculation
 from app.config import settings
 from app.database_init import init_db, drop_db
+
+import os
 
 # ======================================================================================
 # Logging Configuration
@@ -35,10 +38,17 @@ logger = logging.getLogger(__name__)
 fake = Faker()
 Faker.seed(12345)
 
-logger.info(f"Using database URL: {settings.DATABASE_URL}")
+TEST_DATABASE_URL = os.getenv(
+    "TEST_DATABASE_URL",
+    "postgresql://postgres:postgres@localhost:5432/module11_test_db"
+)
 
-# Create an engine and sessionmaker based on DATABASE_URL using factory functions
-test_engine = get_engine(database_url=settings.DATABASE_URL)
+if TEST_DATABASE_URL.rsplit("/", 1)[-1].split("?", 1)[0] != "module11_test_db":
+    raise RuntimeError("Tests must use the module11_test_db database")
+
+logger.info("Using dedicated Module 11 test database")
+
+test_engine = get_engine(database_url=TEST_DATABASE_URL)
 TestingSessionLocal = get_sessionmaker(engine=test_engine)
 
 # ======================================================================================
@@ -101,7 +111,7 @@ class ServerStartupError(Exception):
 # ======================================================================================
 # Primary Database Fixtures
 # ======================================================================================
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def setup_test_database(request):
     """
     Initialize the test database once per session:
@@ -118,11 +128,7 @@ def setup_test_database(request):
 
     # Create all tables
     Base.metadata.create_all(bind=test_engine)
-    logger.info("Created all tables based on models.")
-
-    # Initialize the database (e.g., run migrations or seed data)
-    init_db()
-    logger.info("Initialized the test database with initial data.")
+    logger.info("Created all test database tables.")
 
     yield  # All tests run here
 
@@ -131,11 +137,11 @@ def setup_test_database(request):
         logger.info("Skipping drop_db due to --preserve-db flag.")
     else:
         logger.info("Cleaning up test database...")
-        drop_db()
+        Base.metadata.drop_all(bind=test_engine)
         logger.info("Dropped test database tables.")
 
 @pytest.fixture
-def db_session(request) -> Generator[Session, None, None]:
+def db_session(request, setup_test_database) -> Generator[Session, None, None]:
     """
     Provide a test-scoped database session.
     By default, truncates all tables after each test to ensure isolation,
