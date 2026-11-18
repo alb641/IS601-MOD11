@@ -1,12 +1,16 @@
-# IS601 Module 11 — Calculation Model, Validation, Testing, and CI/CD
+# IS601 Module 11 — FastAPI Calculator with SQLAlchemy and PostgreSQL
+
+**GitHub Repository:** https://github.com/alb641/IS601-MOD11
+
+**GitHub Actions:** https://github.com/alb641/IS601-MOD11/actions
+
+**Docker Hub Username:** aliyahb4
 
 ## Project Overview
 
-This project extends the FastAPI Calculator application developed in previous IS601 modules by introducing a database-backed Calculation model using SQLAlchemy, Pydantic schemas for data validation, and a Calculation Factory for handling arithmetic operations.
+This project extends the FastAPI Calculator application by incorporating SQLAlchemy, PostgreSQL, and Pydantic to support database persistence, structured data validation, and arithmetic calculations.
 
-The application uses FastAPI, PostgreSQL, SQLAlchemy, Pydantic, Docker, and GitHub Actions to demonstrate how calculations can be validated, processed, stored, tested, and incorporated into an automated CI/CD pipeline.
-
-The primary objective of Module 11 is to strengthen the application's data modeling, validation, testing, and deployment processes while maintaining functionality from previous modules.
+The application supports addition, subtraction, multiplication, and division. The project also incorporates automated testing, Docker containerization, GitHub Actions CI/CD, and Trivy vulnerability scanning.
 
 ## Technologies Used
 
@@ -15,211 +19,142 @@ The primary objective of Module 11 is to strengthen the application's data model
 - SQLAlchemy
 - PostgreSQL
 - Pydantic
-- Pytest
 - Docker and Docker Compose
+- pytest
 - GitHub Actions
-- Docker Hub
-- Trivy Vulnerability Scanner
+- Trivy
 
-## Module 11 Features
+## Application Features
 
-### 1. SQLAlchemy Calculation Model
+### SQLAlchemy Calculation Model
 
-Created a Calculation model using SQLAlchemy ORM rather than raw SQL.
+The application uses SQLAlchemy to represent calculation records stored in PostgreSQL. The model includes calculation identifiers, operands, operation types, and calculation results.
 
-The model includes the following fields:
+Using SQLAlchemy allows the application to manage database records through Python objects rather than relying on raw SQL for every operation.
 
-| `id` | Unique UUID identifying each calculation |
-| `a` | First numerical operand |
-| `b` | Second numerical operand |
-| `type` | Arithmetic operation |
-| `result` | Calculated result |
-| `user_id` | Optional foreign key referencing the User model |
-| `created_at` | Timestamp for the calculation record |
+### Pydantic Validation
 
-The model supports four arithmetic operations: Add, Subtract, Multiply, and Divide.
+Pydantic schemas validate incoming calculation requests and structure outgoing responses.
 
-Database constraints help prevent invalid operation types and division by zero.
+The validation logic checks numeric inputs, supported arithmetic operations, and invalid calculations such as division by zero.
 
-### 2. Pydantic Schemas and Validation
+### Arithmetic Operations
 
-Implemented Pydantic schemas to validate calculation data.
+The calculator supports the following operations:
 
-**CalculationCreate** accepts the operands and operation type.
+| Operation | Example | Result |
+|---|---|---|
+| Addition | 10 + 5 | 15 |
+| Subtraction | 10 - 5 | 5 |
+| Multiplication | 10 × 5 | 50 |
+| Division | 10 ÷ 5 | 2 |
 
-**CalculationRead** represents calculation records returned from the database, including their UUID and result.
+### Calculation Factory
 
-Validation includes:
+The calculation factory organizes arithmetic operations and separates calculation logic from other application responsibilities.
 
-- Restricting operations to supported calculation types
-- Preventing division by zero
-- Rejecting missing required operands
-- Rejecting non-finite numerical values, including NaN and infinity
+This improves maintainability and supports future expansion.
 
-These validations help prevent invalid data from entering the application.
+### PostgreSQL Integration
 
-### 3. Calculation Factory
+PostgreSQL provides persistent data storage, while SQLAlchemy manages interactions between Python models and database tables.
 
-Implemented a Calculation Factory to separate arithmetic logic from database operations.
+## Installation and Setup
 
-The factory supports addition, subtraction, multiplication, and division.
-
-This design improves code organization, maintainability, and testability by keeping calculation processing separate from the SQLAlchemy model and Pydantic schemas.
-
-### 4. PostgreSQL Integration
-
-Integrated the Calculation model with PostgreSQL using SQLAlchemy.
-
-The Calculation and User models share the same SQLAlchemy metadata, allowing their database tables and relationships to be managed consistently.
-
-A dedicated database named `module11_test_db` was created for integration testing.
-
-This separates test operations from the application's regular database and reduces the risk of modifying existing application data during testing.
-
-### 5. Automated Testing
-
-Implemented unit tests and database integration tests using Pytest.
-
-Testing covers:
-
-- All four arithmetic operations
-- Division-by-zero validation
-- Invalid operation types
-- Missing operands
-- NaN and infinity validation
-- Calculation record creation and retrieval
-- Database persistence
-- User foreign-key relationships
-- Database constraint enforcement
-
-The complete test suite includes both existing application tests and the new Module 11 tests.
-
-**Latest local test results:**
-
-93 passed, 1 skipped
-
-Run the complete test suite with:
-
-```bash
-python -m pytest tests/ -v --tb=short
-```
-
-Check dependency compatibility with:
-
-```bash
-python -m pip check
-```
-
-### 6. CI/CD with GitHub Actions
-
-Configured GitHub Actions to automate testing, security scanning, and Docker image deployment.
-
-The workflow consists of three jobs:
-
-1. **Test:** Installs dependencies, starts a PostgreSQL service, and executes the automated test suite.
-2. **Security:** Builds the Docker image and scans it using Trivy.
-3. **Deploy:** Publishes the Docker image to Docker Hub after the preceding jobs complete successfully.
-
-The workflow runs when changes are pushed to the main branch.
-
-GitHub Actions uses repository secrets for Docker Hub authentication.
-
-### 7. Security Scanning and Vulnerability Remediation
-
-Trivy is integrated into the CI/CD workflow to identify HIGH and CRITICAL vulnerabilities in the Docker image. A major focus of this module was improving my security configuration based on feedback I received from my professor on Module 10.
-
-In my previous assignment, professor pointed out that Trivy was configured with exit-code: '0', which allowed the CI/CD pipeline to continue deploying the application even when security vulnerabilities were detected. I wanted to address this feedback directly in Module 11 by implementing a stricter security configuration rather than repeating the same issue.
-
-Initial scans detected vulnerable Python dependencies, including PyJWT, h11, Starlette, python-multipart, and dnspython.
-
-Several dependencies were upgraded, and the application was retested to confirm compatibility.
-
-During troubleshooting, Trivy was temporarily configured with `exit-code: '0'`, allowing the pipeline to continue while reporting vulnerabilities.
-
-**Security remediation is ongoing.** The next objective is to resolve the remaining actionable findings, restore `exit-code: '1'`, and verify that deployment succeeds with a blocking security scan.
-
-A successful workflow with a nonblocking scanner is not considered proof that all vulnerabilities have been resolved.
-
-## Installation and Testing
-
-### Clone the Repository
+### Step 1: Clone the Repository
 
 ```bash
 git clone https://github.com/alb641/IS601-MOD11.git
 cd IS601-MOD11
 ```
 
-### Create a Virtual Environment
+### Step 2: Create a Virtual Environment
+
+On Windows PowerShell:
 
 ```powershell
-py -3.13 -m venv venv
+python -m venv venv
 .\venv\Scripts\Activate.ps1
 ```
 
-### Install Dependencies
+### Step 3: Install Dependencies
 
-```bash
-python -m pip install -r requirements.txt
+```powershell
+pip install -r requirements.txt
 ```
 
-### Configure PostgreSQL
+### Step 4: Configure Environment Variables
 
-Ensure PostgreSQL is running and create a dedicated test database named:
+Configure the PostgreSQL database connection and application authentication settings using environment variables or a local `.env` file.
 
-```text
-module11_test_db
+Do not commit sensitive credentials to GitHub.
+
+### Step 5: Start PostgreSQL
+
+With Docker Desktop running:
+
+```powershell
+docker compose up -d db
 ```
 
-The test suite reads the `TEST_DATABASE_URL` environment variable and verifies that the database name is `module11_test_db`.
+### Step 6: Start FastAPI
 
-For local testing, the default test connection is configured for PostgreSQL on `localhost:5432` with the development credentials used in this project.
-
-### Run Tests
-
-```bash
-python -m pytest tests/ -v --tb=short
+```powershell
+python -m uvicorn main:app --reload
 ```
 
-## CI/CD and Docker Hub
+Application URL: http://127.0.0.1:8000
 
-**GitHub Repository:**  
-https://github.com/alb641/IS601-MOD11
+Interactive API documentation: http://127.0.0.1:8000/docs
 
-**GitHub Actions:**  
-https://github.com/alb641/IS601-MOD11/actions
+## Testing
 
-**Docker Hub Repository:**  
-https://hub.docker.com/r/aliyahb4/is601-mod11
+The application uses pytest for unit, integration, end-to-end, and regression testing.
 
-The Docker image is published with a `latest` tag and a commit-specific tag.
+Run the tests using:
 
-## Challenges and Troubleshooting
+```powershell
+python -m pytest -q
+```
 
-Several challenges occurred during development:
+**Latest confirmed local results: 94 passed, 1 skipped.**
 
-- Correcting SQLAlchemy metadata configuration so the User and Calculation models shared the same database metadata
-- Creating an isolated PostgreSQL test database
-- Adjusting Pytest fixtures to avoid unnecessary database initialization
-- Resolving incompatible Python dependency versions
-- Correcting an unavailable Trivy GitHub Action version
-- Investigating vulnerabilities reported during Docker image scanning
-- Configuring GitHub Actions secrets and Docker Hub deployment
+## Docker
 
-These issues were addressed incrementally through testing, dependency validation, and CI/CD troubleshooting.
+Docker provides a consistent application environment, and Docker Compose simplifies running the application with PostgreSQL.
 
-## Current Project Status
+Build the Docker image:
 
-- Calculation model implemented
-- Pydantic schemas implemented
-- Calculation Factory implemented
-- PostgreSQL integration tests implemented
-- 93 tests passing, 1 skipped
-- GitHub Actions test pipeline passing
-- Docker Hub image successfully published
-- Security remediation ongoing
+```powershell
+docker build -t is601-mod11 .
+```
 
-## Future Improvements
+Start the services:
 
-Future work includes resolving remaining dependency vulnerabilities, restoring blocking Trivy security checks, and continuing to expand the calculator application with additional functionality and database operations.
+```powershell
+docker compose up -d
+```
 
-The goal is to maintain a reliable application that can be tested, secured, and deployed automatically.
+A `.dockerignore` file excludes unnecessary development files, including local virtual environments, caches, and Git metadata.
+
+## GitHub Actions CI/CD
+
+GitHub Actions automates testing, Docker image building, vulnerability scanning, and image publishing.
+
+**Workflow:** https://github.com/alb641/IS601-MOD11/actions
+
+Trivy is used to scan the Docker image for known security vulnerabilities.
+
+During troubleshooting, the reported vulnerability count was reduced from 26 to 1, eliminating all reported CRITICAL findings.
+
+One HIGH vulnerability involving setuptools remained unresolved. Trivy's exit code was changed to `0` to make findings non-blocking while continuing to report them. This does not resolve the remaining vulnerability as mentioned by Professor in previous feedback.
+
+## Docker Hub Repo
+
+**Docker Hub Repo:** [https://hub.docker.com/u/aliyahb4](https://hub.docker.com/r/aliyahb4/is601-mod11/tags)
+
+The GitHub Actions workflow includes Docker image publishing. The successful publication of the Module 11 image should be confirmed in the workflow logs.
+
+## Project Repository
+
+**GitHub:** https://github.com/alb641/IS601-MOD11
