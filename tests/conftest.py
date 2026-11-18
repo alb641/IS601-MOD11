@@ -96,10 +96,10 @@ def wait_for_server(url: str, timeout: int = 30) -> bool:
     start_time = time.time()
     while (time.time() - start_time) < timeout:
         try:
-            response = requests.get(url)
+            response = requests.get(url, timeout=2)
             if response.status_code == 200:
                 return True
-        except requests.exceptions.ConnectionError:
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
             pass
         time.sleep(1)
     return False
@@ -232,7 +232,7 @@ def fastapi_server():
             "--port", "8000"
             ],
             stdout=subprocess.DEVNULL,
-            stderr=subprocess.PIPE
+            stderr=subprocess.DEVNULL
         )
         if not wait_for_server(server_url, timeout=30):
             raise ServerStartupError("Failed to start test server")

@@ -19,10 +19,13 @@ from app.schemas.user import UserResponse, Token
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Move to config
-SECRET_KEY = "your-secret-key"
+
+from app.config import settings
+
+SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
 
 class User(Base):
     __tablename__ = 'users'
